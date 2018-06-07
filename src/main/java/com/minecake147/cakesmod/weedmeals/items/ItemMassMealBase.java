@@ -1,35 +1,49 @@
 package com.minecake147.cakesmod.weedmeals.items;
 
-import java.util.List;
 import java.util.Random;
 
 import com.minecake147.cakesmod.weedmeals.WeedMeals;
 
+import java.lang.*;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockGrass;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
-import net.minecraft.item.EnumAction;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 
-public class ItemWeedMeal extends Item {
+public class ItemMassMealBase extends Item  {
 	@SideOnly(Side.CLIENT)
     private IIcon[] IIconarray;
 	private static final int num = 1;
-	public ItemWeedMeal() {
+	private Block block, blockbase;
+	private int meta=0;
+	private String texName;
+	public ItemMassMealBase(Block BaseBlock, Block BlockToProduce) {
+		this(BaseBlock,BlockToProduce,0);
+	}
+	
+	public ItemMassMealBase(Block BaseBlock, Block BlockToProduce, int Meta){
 		super();
+		if(BaseBlock!=null)blockbase=BaseBlock;
+		else throw new IllegalArgumentException("BaseBlock");
+		if(BlockToProduce!=null)block=BlockToProduce;
+		else throw new IllegalArgumentException("BlockToProduce");
+		meta=Meta;
 	}
 
+	public ItemMassMealBase setTexName(String value){
+		texName=value;
+		return this;
+	}
 	public boolean canHarvestBlock(Block par1Block, ItemStack itemStack)
     {
         return false;
@@ -47,7 +61,7 @@ public class ItemWeedMeal extends Item {
      */
     public boolean onItemUseFirst(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int side, float hitX, float hitY, float hitZ)
     {
-    	if(!world.isRemote && world.getBlock(x, y, z) instanceof BlockGrass){
+    	if(!world.isRemote && blockbase.getClass().isInstance(world.getBlock(x, y, z))){
     		int l = 0;
     		Random p_149853_2_ = new Random();
             while (l < 128)
@@ -65,7 +79,7 @@ public class ItemWeedMeal extends Item {
                         j1 += (p_149853_2_.nextInt(3) - 1) * p_149853_2_.nextInt(3) / 2;
                         k1 += p_149853_2_.nextInt(3) - 1;
 
-                        if (world.getBlock(i1, j1 - 1, k1) == Blocks.grass && !world.getBlock(i1, j1, k1).isNormalCube())
+                        if (blockbase.getClass().isInstance(world.getBlock(i1, j1 - 1, k1)) && !world.getBlock(i1, j1, k1).isNormalCube())
                         {
                             ++l1;
                             continue;
@@ -73,9 +87,9 @@ public class ItemWeedMeal extends Item {
                     }
                     else if (world.getBlock(i1, j1, k1).getMaterial() == Material.air)
                     {
-                    	if (Blocks.tallgrass.canBlockStay(world, i1, j1, k1))
+                    	if (block.canBlockStay(world, i1, j1, k1))
                         {
-                        	world.setBlock(i1, j1, k1, Blocks.tallgrass, 1, 3);
+                        	world.setBlock(i1, j1, k1, block, meta, 3);
                         }
                     }
 
@@ -116,7 +130,7 @@ public class ItemWeedMeal extends Item {
             }
         }
     }
-	@Override
+    @Override
 	@SideOnly(Side.CLIENT)
     public IIcon getIconFromDamage(int par1)
     {
@@ -129,6 +143,6 @@ public class ItemWeedMeal extends Item {
     public void registerIcons(IIconRegister register)
     {
     	this.IIconarray = new IIcon[num];
-    	this.IIconarray[0] = register.registerIcon(WeedMeals.RESDOMAIN + ":weedmeal");
+    	this.IIconarray[0] = register.registerIcon(WeedMeals.RESDOMAIN + ":" + texName);
     }
 }
